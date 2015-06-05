@@ -62,7 +62,8 @@
 ;;;                     version that is bundled with SLIME.
 ;;; 22-Aug-08 stas      Define TIME-TYPE for Clozure CL.
 ;;; 07-Aug-12 heller    Break lines at 80 columns
-;;;
+;;; 07-Jun-15 pmr       Split off from Slime.
+;;; 
 
 ;;; ********************************
 ;;; To Do **************************
