@@ -21,7 +21,6 @@
 ;;; This code is in the public domain and is distributed without warranty
 ;;; of any kind.
 ;;;
-;;; This copy is from SLIME, http://www.common-lisp.net/project/slime/
 ;;;
 ;;;
 
