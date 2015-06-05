@@ -358,19 +358,7 @@ Estimated total monitoring overhead: 0.88 seconds
 ;;; Packages ***********************
 ;;; ********************************
 
-;;; For CLtL2 compatible lisps
-
-(defpackage "SWANK-MONITOR" (:use "COMMON-LISP")
-            (:export "*MONITORED-FUNCTIONS*"
-                     "MONITOR" "MONITOR-ALL" "UNMONITOR" "MONITOR-FORM"
-                     "WITH-MONITORING"
-                     "RESET-MONITORING-INFO" "RESET-ALL-MONITORING"
-                     "MONITORED"
-                     "REPORT-MONITORING"
-                     "DISPLAY-MONITORING-RESULTS"
-                     "MONITORING-ENCAPSULATE" "MONITORING-UNENCAPSULATE"
-                     "REPORT"))
-(in-package "SWANK-MONITOR")
+(in-package #:monitor)
 
 ;;; Warn user if they're loading the source instead of compiling it first.
 (eval-when (eval)
