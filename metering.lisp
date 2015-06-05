@@ -361,10 +361,6 @@ Estimated total monitoring overhead: 0.88 seconds
 
 (in-package #:monitor)
 
-;;; Warn user if they're loading the source instead of compiling it first.
-(eval-when (eval)
-  (warn "This file should be compiled before loading for best results."))
-
 ;;; ********************************
 ;;; Version ************************
 ;;; ********************************
