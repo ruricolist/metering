@@ -145,10 +145,10 @@
 ;;; in order to average out to a higher resolution.
 ;;;
 ;;; The easiest way to use this package is to load it and execute either
-;;;     (swank-monitor:with-monitoring (names*) ()
+;;;     (monitor:with-monitoring (names*) ()
 ;;;         your-forms*)
 ;;; or
-;;;     (swank-monitor:monitor-form your-form)
+;;;     (monitor:monitor-form your-form)
 ;;; The former allows you to specify which functions will be monitored; the
 ;;; latter monitors all functions in the current package. Both automatically
 ;;; produce a table of statistics. Other variants can be constructed from
@@ -247,7 +247,7 @@
 ;;; The named functions will be set up for monitoring by augmenting
 ;;; their function definitions with code that gathers statistical information
 ;;; about code performance. As with the TRACE macro, the function names are
-;;; not evaluated. Calls the function SWANK-MONITOR::MONITORING-ENCAPSULATE on each
+;;; not evaluated. Calls the function MONITOR::MONITORING-ENCAPSULATE on each
 ;;; function name. If no names are specified, returns a list of all
 ;;; monitored functions.
 ;;;
@@ -1173,8 +1173,8 @@ Time      Cons~
         (if (> num-no-calls 20)
             (format *trace-output*
                     "~%~@(~r~) monitored functions were not called. ~
-                      ~%See the variable swank-monitor::*no-calls* for a list."
-                    num-no-calls)
+                      ~%See the variable ~s for a list."
+                    num-no-calls '*no-calls*)
             (format *trace-output*
                     "~%The following monitored functions were not called:~
                 ~%~{~<~%~:; ~A~>~}~%"
