@@ -513,40 +513,20 @@ Estimated total monitoring overhead: 0.88 seconds
 ;;; is the number of required arguments, and the second is T iff there are any
 ;;; non-required arguments (e.g. &optional, &rest, &key).
 
-;;; Lucid, Allegro, and Macintosh Common Lisp
-#+openmcl
 (defun required-arguments (name)
-  (let* ((function (symbol-function name))
-         (args (ccl:arglist function))
-         (pos (position-if #'(lambda (x)
-                               (and (symbolp x)
-                                    (let ((name (symbol-name x)))
-                                      (and (>= (length name) 1)
-                                           (char= (schar name 0)
-                                                  #\&)))))
-                           args)))
-    (if pos
-        (values pos t)
-        (values (length args) nil))))
-
-#+clisp
-(defun required-arguments (name)
-  (multiple-value-bind (name req-num opt-num rest-p key-p keywords allow-p)
-      (sys::function-signature name t)
-    (if name ; no error
-        (values req-num (or (/= 0 opt-num) rest-p key-p keywords allow-p))
-        (values 0 t))))
-
-#-(or clisp openmcl)
-(progn
-  (eval-when (compile eval)
-    (warn
-     "You may want to add an implementation-specific ~
-Required-Arguments function."))
-  (eval-when (load eval)
-    (defun required-arguments (name)
-      (declare (ignore name))
-      (values 0 t))))
+  (let ((args (swank-backend:arglist name)))
+    (if (eql args :not-available)
+        (values 0 t)
+        (let ((pos (position-if #'(lambda (x)
+                                    (and (symbolp x)
+                                         (let ((name (symbol-name x)))
+                                           (and (>= (length name) 1)
+                                                (char= (schar name 0)
+                                                       #\&)))))
+                                args)))
+          (if pos
+              (values pos t)
+              (values (length args) nil))))))
 
 #|
 ;;;Examples

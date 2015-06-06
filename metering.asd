@@ -5,7 +5,8 @@
   :author "Your Name <your.name@example.com>"
   :license "Specify license here"
   :serial t
-  :depends-on (#:osicat)
+  :depends-on (#:osicat
+               #:swank)
   :components ((:file "package")
                (:file "metering")))
 
