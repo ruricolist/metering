@@ -379,20 +379,23 @@ Estimated total monitoring overhead: 0.88 seconds
 ;;; the beginning of time. time-units-per-second allows us to convert units
 ;;; to seconds.
 
-#-(or clisp openmcl)
-(eval-when (compile eval)
-  (warn
-   "You may want to supply implementation-specific get-time functions."))
+(defconstant time-units-per-second
+  (* 1 (expt 10 9))
+  "Nanoseconds per second.")
 
-(defconstant time-units-per-second internal-time-units-per-second)
+(defun get-monotonic-time ()
+  "Get time with nanosecond resolution."
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
+  (multiple-value-bind (seconds nanoseconds)
+      (nix:clock-gettime nix:clock-monotonic)
+    (declare (type (integer 0 #.(1- (* 1 (expt 10 9)))) nanoseconds))
+    (+ (* seconds time-units-per-second) nanoseconds)))
 
-#+openmcl
-(progn
-  (deftype time-type () 'unsigned-byte)
-  (deftype consing-type () 'unsigned-byte))
+(deftype time-type () 'unsigned-byte)
+(deftype consing-type () 'unsigned-byte)
 
 (defmacro get-time ()
-  `(the time-type (get-internal-run-time)))
+  `(the time-type (get-monotonic-time)))
 
 ;;; NOTE: In Macintosh Common Lisp, CCL::GCTIME returns the number of
 ;;;       milliseconds spent during GC. We could subtract this from
