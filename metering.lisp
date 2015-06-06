@@ -988,7 +988,7 @@ of an empty function many times."
       (funcall overhead-function overhead-function)))
                                         ;  (dotimes (x overhead-iterations)
                                         ;    (stub-function nil))
-  (let ((fiter (float overhead-iterations)))
+  (let ((fiter (float overhead-iterations 0d0)))
     (multiple-value-bind (calls nested-calls time cons)
         (monitor-info-values 'stub-function)
       (declare (ignore calls nested-calls))
@@ -1082,14 +1082,14 @@ functions set NAMES to be either NIL or :ALL."
                   (push (make-monitoring-info
                          (format nil "~S" name) ; name
                          calls          ; calls
-                         (/ time (float time-units-per-second)) ; time in secs
+                         (/ time (float time-units-per-second 0d0)) ; time in secs
                          (round cons)   ; consing
-                         (/ time (float total-time)) ; percent-time
+                         (/ time (float total-time 0d0)) ; percent-time
                          (if (zerop total-cons) 0
-                             (/ cons (float total-cons))) ; percent-cons
-                         (/ (/ time (float calls)) ; time-per-call
+                             (/ cons (float total-cons 0d0))) ; percent-cons
+                         (/ (/ time (float calls 0d0)) ; time-per-call
                             time-units-per-second) ; sec/call
-                         (round (/ cons (float calls)))) ; cons-per-call
+                         (round (/ cons (float calls 0d0)))) ; cons-per-call
                         *monitor-results*))))
           (display-monitoring-results threshold key ignore-no-calls)))))
 
