@@ -255,7 +255,7 @@
 ;;; in a variable, array or structure. Most other monitoring packages
 ;;; can't handle this.
 ;;;
-;;; MONITOR-ALL &optional (package *package*)                 [Function]
+;;; MONITOR-PACKAGE &optional (package *package*)             [Function]
 ;;; Monitors all functions in the specified package, which defaults to
 ;;; the current package.
 ;;;
@@ -904,7 +904,7 @@ adjusted for overhead."
   `(dolist (name ,(if names `',names '*monitored-functions*) (values))
      (monitoring-unencapsulate name)))
 
-(defun MONITOR-ALL (&optional (package *package*))
+(defun MONITOR-PACKAGE (&optional (package *package*))
   "Monitor all functions in the specified package."
   (let ((package (if (packagep package)
 		     package
@@ -921,7 +921,7 @@ during the execution of FORM.  All functions that are executed above
 THRESHOLD % will be reported."
   `(unwind-protect
         (progn
-          (monitor-all)
+          (monitor-package)
           (reset-all-monitoring)
           (prog1
               (time ,form)

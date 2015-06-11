@@ -3,7 +3,7 @@
 (defpackage #:monitor
   (:use #:cl)
   (:export #:*monitored-functions*
-           #:monitor #:monitor-all #:unmonitor #:monitor-form
+           #:monitor #:monitor-package #:unmonitor #:monitor-form
            #:with-monitoring
            #:reset-monitoring-info #:reset-all-monitoring
            #:monitored
