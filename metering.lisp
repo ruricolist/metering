@@ -560,9 +560,9 @@ Estimated total monitoring overhead: 0.88 seconds
   "Total amount of consing monitored so far.")
 (defvar *TOTAL-CALLS* 0
   "Total number of calls monitored so far.")
-(proclaim '(type time-type *total-time*))
-(proclaim '(type consing-type *total-cons*))
-(proclaim '(fixnum *total-calls*))
+(declaim (type time-type *total-time*))
+(declaim (type consing-type *total-cons*))
+(declaim (fixnum *total-calls*))
 
 ;;; ********************************
 ;;; Accessor Functions *************
@@ -950,10 +950,10 @@ THRESHOLD % will be reported."
   "Number of iterations over which the timing overhead is averaged.")
 
 ;;; Perhaps this should return something to frustrate clever compilers.
+(declaim (notinline stub-function))
 (defun STUB-FUNCTION (x)
   (declare (ignore x))
   nil)
-(proclaim '(notinline stub-function))
 
 (defun SET-MONITOR-OVERHEAD ()
   "Determines the average overhead of monitoring by monitoring the execution
@@ -985,7 +985,6 @@ of an empty function many times."
 (defvar *no-calls* nil
   "A list of monitored functions which weren't called.")
 (defvar *estimated-total-overhead* 0)
-;; (proclaim '(type time-type *estimated-total-overhead*))
 
 (defstruct (monitoring-info
             (:conc-name m-info-)
