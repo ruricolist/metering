@@ -946,7 +946,7 @@ THRESHOLD % will be reported."
 ;;; ********************************
 ;;; Overhead Calculations **********
 ;;; ********************************
-(defconstant overhead-iterations 5000
+(defparameter *overhead-iterations* 5000
   "Number of iterations over which the timing overhead is averaged.")
 
 ;;; Perhaps this should return something to frustrate clever compilers.
@@ -964,11 +964,9 @@ of an empty function many times."
   (monitor stub-function)
   (reset-all-monitoring)
   (let ((overhead-function (symbol-function 'stub-function)))
-    (dotimes (x overhead-iterations)
+    (dotimes (x *overhead-iterations*)
       (funcall overhead-function overhead-function)))
-                                        ;  (dotimes (x overhead-iterations)
-                                        ;    (stub-function nil))
-  (let ((fiter (float overhead-iterations 0d0)))
+  (let ((fiter (float *overhead-iterations* 0d0)))
     (multiple-value-bind (calls nested-calls time cons)
         (monitor-info-values 'stub-function)
       (declare (ignore calls nested-calls))
