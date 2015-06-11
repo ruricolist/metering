@@ -638,12 +638,36 @@ variables/arrays/structures."
 ;;; name or other closure. This holds the functions that we call to manipulate
 ;;; the closure which implements the encapsulation.
 ;;;
-(defstruct metering-functions
-  (name nil)
-  (old-definition nil :type function)
-  (new-definition nil :type function)
-  (read-metering  nil :type function)
-  (reset-metering nil :type function))
+(defclass metering-functions ()
+  ((name
+    :initarg :name
+    :initform nil
+    :accessor metering-functions-name)
+   (old-definition
+    :initarg :old-definition
+    :initform nil
+    :type function
+    :accessor metering-functions-old-definition)
+   (new-definition
+    :initarg :new-definition
+    :initform nil
+    :type function
+    :accessor metering-functions-new-definition)
+   (read-metering
+    :initarg :read-metering
+    :initform nil
+    :type function
+    :accessor metering-functions-read-metering)
+   (reset-metering
+    :initarg :reset-metering
+    :initform nil
+    :type function
+    :accessor metering-functions-reset-metering)))
+
+(defun make-metering-functions (&rest args)
+  (apply #'make-instance
+         'metering-functions
+         args))
 
 ;;; In general using hash tables in time-critical programs is a bad idea,
 ;;; because when one has to grow the table and rehash everything, the
@@ -992,20 +1016,44 @@ of an empty function many times."
 Can be one of :text (for text) or :html (for HTML).")
 (declaim (type (member :html :text) *report-format*))
 
-(defstruct (monitoring-info
-            (:conc-name m-info-)
-            (:constructor make-monitoring-info
-                (name calls time cons
-                 percent-time percent-cons
-                 time-per-call cons-per-call)))
-  name
-  calls
-  time
-  cons
-  percent-time
-  percent-cons
-  time-per-call
-  cons-per-call)
+(defclass monitoring-info ()
+  ((name
+    :initarg :name
+    :accessor m-info-name)
+   (calls
+    :initarg :calls
+    :accessor m-info-calls)
+   (time
+    :initarg :time
+    :accessor m-info-time)
+   (cons
+    :initarg :cons
+    :accessor m-info-cons)
+   (percent-time
+    :initarg :percent-time
+    :accessor m-info-percent-time)
+   (percent-cons
+    :initarg :percent-cons
+    :accessor m-info-percent-cons)
+   (time-per-call
+    :initarg :time-per-call
+    :accessor m-info-time-per-call)
+   (cons-per-call
+    :initarg :cons-per-call
+    :accessor m-info-cons-per-call)))
+
+(defun make-monitoring-info (name calls time cons
+                             percent-time percent-cons
+                             time-per-call cons-per-call)
+  (make-instance 'monitoring-info
+                 :name name
+                 :calls calls
+                 :time time
+                 :cons cons
+                 :percent-time percent-time
+                 :percent-cons percent-cons
+                 :time-per-call time-per-call
+                 :cons-per-call cons-per-call))
 
 (defun REPORT (&key (names :all)
 		    (nested :exclusive)
