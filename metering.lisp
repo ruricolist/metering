@@ -305,12 +305,15 @@
 ;;;         :cons-per-call  by average consing per function
 ;;;         :time           same as :percent-time
 ;;;         :cons           same as :percent-cons
+;;;    - AS specifies how to print the report: as text (:text) or as
+;;;      html (:html).
 ;;;
 ;;; REPORT &key (names :all)                                  [Function]
 ;;;             (nested :exclusive)
 ;;;             (threshold 0.01)
 ;;;             (sort-key :percent-time)
 ;;;             (ignore-no-calls nil)
+;;;             (as *report-format*)
 ;;;
 ;;; Same as REPORT-MONITORING but we use a nicer keyword interface.
 ;;;
@@ -984,6 +987,11 @@ of an empty function many times."
   "A list of monitored functions which weren't called.")
 (defvar *estimated-total-overhead* 0)
 
+(defvar *report-format* :text
+  "How to print the report.
+Can be one of :text (for text) or :html (for HTML).")
+(declaim (type (member :html :text) *report-format*))
+
 (defstruct (monitoring-info
             (:conc-name m-info-)
             (:constructor make-monitoring-info
@@ -1003,7 +1011,8 @@ of an empty function many times."
 		    (nested :exclusive)
 		    (threshold 0.01)
 		    (sort-key :percent-time)
-		    (ignore-no-calls nil))
+		    (ignore-no-calls nil)
+                    ((:as *report-format*) *report-format*))
   "Same as REPORT-MONITORING but with a nicer keyword interface"
   (declare (type (member :function :percent-time :time :percent-cons
 			 :cons :calls :time-per-call :cons-per-call)
@@ -1015,7 +1024,8 @@ of an empty function many times."
 				    (nested :exclusive)
 				    (threshold 0.01)
 				    (key :percent-time)
-				    ignore-no-calls)
+				    ignore-no-calls
+                                    (*report-format* *report-format*))
   "Report the current monitoring state.
 The percentage of the total time spent executing unmonitored code
 in each function (:exclusive mode), or total time (:inclusive mode)
@@ -1070,6 +1080,137 @@ functions set NAMES to be either NIL or :ALL."
                         *monitor-results*))))
           (display-monitoring-results threshold key ignore-no-calls)))))
 
+(defmethod results-table-header ((fmt (eql :text)) &key max-length max-cons-length)
+  (format *trace-output*
+          "~%~%~
+                       ~VT                                     ~VA~
+	     ~%        ~VT   %      %                          ~VA  ~
+Total     Total~
+	     ~%Function~VT  Time   Cons    Calls  Sec/Call     ~VA  ~
+Time      Cons~
+             ~%~V,,,'-A"
+          max-length
+          max-cons-length "Cons"
+          max-length
+          max-cons-length "Per"
+          max-length
+          max-cons-length "Call"
+          (+ max-length 62 (max 0 (- max-cons-length 5))) "-"))
+
+(defmethod results-table-header ((fmt (eql :html)) &key max-length max-cons-length)
+  (declare (ignore max-length max-cons-length))
+  (format *trace-output*
+          "~
+<table>
+ <thead>
+  <tr>
+   <th>Function</th>
+   <th>Time</th>
+   <th>Cons</th>
+   <th>Calls</th>
+   <th>Sec/Call</th>
+   <th>Cons per call</th>
+   <th>Total time</th>
+   <th>Total cons</th>
+  </tr>
+ </thead>
+ <tbody>~%"))
+
+(defmethod results-table-row ((fmt (eql :text)) result &key max-length max-cons-length)
+  (format *trace-output*
+          "~%~A:~VT~6,2F  ~6,2F  ~7D  ~,6F  ~VD  ~8,3F  ~10D"
+          (m-info-name result)
+          max-length
+          (* 100 (m-info-percent-time result))
+          (* 100 (m-info-percent-cons result))
+          (m-info-calls result)
+          (m-info-time-per-call result)
+          max-cons-length
+          (m-info-cons-per-call result)
+          (m-info-time result)
+          (m-info-cons result)))
+
+(defmethod results-table-row ((fmt (eql :html)) result &key max-length max-cons-length)
+  (declare (ignore max-length))
+  (format *trace-output*
+          "~&~
+<tr>
+ <td>~A</td>
+ <td>~6,2F</td>
+ <td>~6,2F</td>
+ <td>~7D</td>
+ <td>~,6F</td>
+ <td>~VD</td>
+ <td>~8,3F</td>
+ <td>~10D</td>
+</tr>~%"
+          (m-info-name result)
+          (* 100 (m-info-percent-time result))
+          (* 100 (m-info-percent-cons result))
+          (m-info-calls result)
+          (m-info-time-per-call result)
+          max-cons-length
+          (m-info-cons-per-call result)
+          (m-info-time result)
+          (m-info-cons result)))
+
+(defmethod results-table-footer ((fmt (eql :text))
+                                 &key max-length max-cons-length
+                                      total-percent-time total-percent-cons
+                                      total-calls total-time total-consed)
+  (format *trace-output*
+          "~%~V,,,'-A~
+	    ~%TOTAL:~VT~6,2F  ~6,2F  ~7D  ~9@T ~VA  ~8,3F  ~10D~
+            ~%Estimated monitoring overhead: ~5,2F seconds~
+            ~%Estimated total monitoring overhead: ~5,2F seconds"
+          (+ max-length 62 (max 0 (- max-cons-length 5))) "-"
+          max-length
+          (* 100 total-percent-time)
+          (* 100 total-percent-cons)
+          total-calls
+          max-cons-length " "
+          total-time total-consed
+          (/ (* *monitor-time-overhead* total-calls)
+             time-units-per-second)
+          *estimated-total-overhead*))
+
+(defmethod results-table-footer ((fmt (eql :html))
+                                 &key max-length max-cons-length
+                                      total-percent-time total-percent-cons
+                                      total-calls total-time total-consed)
+  (declare (ignore max-length max-cons-length))
+  (format *trace-output*
+          "~&~
+ </tbody>
+ <tfoot>
+  <tr>
+   <th scope='row'>Total</td>
+   <td>~6,2F</td>
+   <td>~6,2F</td>
+   <td colspan='3'>~7D</td>
+   <td>~8,3F</td>
+   <td>~10D</td>
+  </tr>
+  <tr>
+    <td colspan='8'>
+     Estimated monitoring overhead: ~5,2F seconds
+    </td>
+  </tr>
+  <tr>
+    <td colspan='8'>
+     Estimated total monitoring overhead: ~5,2F seconds
+    </td>
+  </tr>
+ </tfoot>
+</table>"
+          (* 100 total-percent-time)
+          (* 100 total-percent-cons)
+          total-calls
+          total-time total-consed
+          (/ (* *monitor-time-overhead* total-calls)
+             time-units-per-second)
+          *estimated-total-overhead*))
+
 (defun display-monitoring-results (&optional (threshold 0.01)
                                              (key :percent-time)
                                              (ignore-no-calls t))
@@ -1092,56 +1233,32 @@ functions set NAMES to be either NIL or :ALL."
 		   (m-info-cons-per-call result)))))
     (incf max-length 2)
     (setf max-cons-length (+ 2 (ceiling (log max-cons-length 10))))
-    (format *trace-output*
-	    "~%~%~
-                       ~VT                                     ~VA~
-	     ~%        ~VT   %      %                          ~VA  ~
-Total     Total~
-	     ~%Function~VT  Time   Cons    Calls  Sec/Call     ~VA  ~
-Time      Cons~
-             ~%~V,,,'-A"
-	    max-length
-	    max-cons-length "Cons"
-	    max-length
-	    max-cons-length "Per"
-	    max-length
-	    max-cons-length "Call"
-	    (+ max-length 62 (max 0 (- max-cons-length 5))) "-")
+    (results-table-header
+     *report-format*
+     :max-length max-length
+     :max-cons-length max-cons-length)
+    
     (dolist (result *monitor-results*)
       (when (or (zerop threshold)
 		(> (m-info-percent-time result) threshold))
-	(format *trace-output*
-		"~%~A:~VT~6,2F  ~6,2F  ~7D  ~,6F  ~VD  ~8,3F  ~10D"
-		(m-info-name result)
-		max-length
-		(* 100 (m-info-percent-time result))
-		(* 100 (m-info-percent-cons result))
-		(m-info-calls result)
-		(m-info-time-per-call result)
-		max-cons-length
-		(m-info-cons-per-call result)
-		(m-info-time result)
-		(m-info-cons result))
+	(results-table-row
+         *report-format* result
+         :max-length max-length
+         :max-cons-length max-cons-length)
 	(incf total-time (m-info-time result))
 	(incf total-consed (m-info-cons result))
 	(incf total-calls (m-info-calls result))
 	(incf total-percent-time (m-info-percent-time result))
 	(incf total-percent-cons (m-info-percent-cons result))))
-    (format *trace-output*
-	    "~%~V,,,'-A~
-	    ~%TOTAL:~VT~6,2F  ~6,2F  ~7D  ~9@T ~VA  ~8,3F  ~10D~
-            ~%Estimated monitoring overhead: ~5,2F seconds~
-            ~%Estimated total monitoring overhead: ~5,2F seconds"
-	    (+ max-length 62 (max 0 (- max-cons-length 5))) "-"
-	    max-length
-	    (* 100 total-percent-time)
-	    (* 100 total-percent-cons)
-	    total-calls
-	    max-cons-length " "
-	    total-time total-consed
-	    (/ (* *monitor-time-overhead* total-calls)
-	       time-units-per-second)
-	    *estimated-total-overhead*)
+    (results-table-footer
+     *report-format*
+     :max-length max-length
+     :max-cons-length max-cons-length
+     :total-percent-time total-percent-time
+     :total-percent-cons total-percent-cons
+     :total-calls total-calls
+     :total-time total-time
+     :total-consed total-consed)
     (when (and (not ignore-no-calls) *no-calls*)
       (setq *no-calls* (sort *no-calls* #'string<))
       (let ((num-no-calls (length *no-calls*)))

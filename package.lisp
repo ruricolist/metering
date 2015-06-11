@@ -7,7 +7,7 @@
            #:with-monitoring
            #:reset-monitoring-info #:reset-all-monitoring
            #:monitored
-           #:report-monitoring
+           #:report-monitoring #:*report-format*
            #:display-monitoring-results
            #:monitoring-encapsulate #:monitoring-unencapsulate
            #:report))
