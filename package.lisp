@@ -2,6 +2,7 @@
 
 (defpackage #:monitor
   (:use #:cl)
+  (:nicknames #:metering)
   (:export #:*monitored-functions*
            #:monitor #:monitor-package #:unmonitor #:monitor-form
            #:with-monitoring
