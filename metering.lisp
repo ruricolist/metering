@@ -390,7 +390,7 @@ Estimated total monitoring overhead: 0.88 seconds
   "Get time with nanosecond resolution."
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   (multiple-value-bind (seconds nanoseconds)
-      (nix:clock-gettime nix:clock-monotonic)
+      (nix:clock-gettime nix:clock-process-cputime-id)
     (declare (type (integer 0 #.(1- (* 1 (expt 10 9)))) nanoseconds))
     (+ (* seconds time-units-per-second) nanoseconds)))
 
@@ -901,7 +901,9 @@ adjusted for overhead."
   "Removes monitoring encapsulation code from around Name."
   (let ((finfo (get-monitor-info name)))
     (when finfo                         ; monitored
-      (remprop name 'metering-functions)
+      ;; TODO Is this necessary?
+      (when (symbolp name)
+        (remprop name 'metering-functions))
       (setq *monitored-functions*
             (remove name *monitored-functions* :test #'equal))
       (if (eq (place-function name)
