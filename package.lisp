@@ -11,5 +11,5 @@
            #:report-monitoring #:*report-format*
            #:display-monitoring-results
            #:monitoring-encapsulate #:monitoring-unencapsulate
-           #:report))
-
+           #:report
+           #:reset))

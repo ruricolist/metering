@@ -705,6 +705,10 @@ variables/arrays/structures."
   (dolist (symbol *monitored-functions*)
     (when (monitored symbol)
       (reset-monitoring-info symbol))))
+(defun reset (&rest names)
+  (if names
+      (mapc #'reset-monitoring-info names)
+      (reset-all-monitoring)))
 
 (defun monitor-info-values (name &optional (nested :exclusive) warn)
   "Returns monitoring information values for the named function,
