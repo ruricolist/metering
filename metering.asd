@@ -1,9 +1,9 @@
 ;;;; metering.asd
 
 (asdf:defsystem #:metering
-  :description "Describe metering here"
-  :author "Your Name <your.name@example.com>"
-  :license "Specify license here"
+  :description "Modernized Metering System."
+  :author "Paul M. Rodriguez <pmr@ruricolist.com>"
+  :license "MIT"
   :serial t
   :depends-on (#:osicat
                #:swank)
