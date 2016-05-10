@@ -269,7 +269,7 @@
 ;;; RESET-ALL-MONITORING                                      [Function]
 ;;; Resets the monitoring statistics for all monitored functions.
 ;;;
-;;; MONITORED name                                            [Function]
+;;; MONITOREDP name                                           [Function]
 ;;; Predicate to test whether a function is monitored.
 ;;;
 ;;; REPORT-MONITORING &optional names                         [Function]
@@ -687,7 +687,7 @@ variables/arrays/structures."
 (defsetf get-monitor-info (name) (info)
   `(setf (gethash ,name *monitor*) ,info))
 
-(defun MONITORED (function-place)
+(defun MONITOREDP (function-place)
   "Test to see if a FUNCTION-PLACE is monitored."
   (and (place-fboundp function-place)   ; this line necessary?
        (get-monitor-info function-place)))
